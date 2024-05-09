@@ -1,7 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-namespace LocontesLibrary.Models;
+namespace LocontesLibrary.Models.DTOs;
 
-public class MaterialType
+
+public class MaterialTypeDTO
 {
     public int Id { get; set; }
     [Required]

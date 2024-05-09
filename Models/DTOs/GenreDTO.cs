@@ -1,7 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-namespace LocontesLibrary.Models;
+namespace LocontesLibrary.Models.DTOs;
 
-public class Genre
+
+public class GenreDTO
 {
     public int Id { get; set; }
     [Required]
