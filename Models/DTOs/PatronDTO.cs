@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-namespace LocontesLibrary.Models.DTOs;
+namespace LoncotesLibrary.Models.DTOs;
 
 public class PatronDTO
 {
