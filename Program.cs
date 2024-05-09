@@ -28,12 +28,20 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/api/materials", (LoncotesLibraryDbContext db) =>
+app.MapGet("/api/materials", (LoncotesLibraryDbContext db, int? GenreId, int? MaterialTypeId) =>
 {
+    if (GenreId != null && MaterialTypeId != null)
+    {
+
+    }
+
     return db.Materials
     .Include(m => m.Genre)
     .Include(m => m.MaterialType)
-    .Where(m => m.OutOfCirculationSince == null)
+    // .Where(m => m.OutOfCirculationSince == null)
+    .Where(m => m.OutOfCirculationSince == null &&
+                    (MaterialTypeId == null || m.MaterialTypeId == MaterialTypeId) &&
+                    (GenreId == null || m.GenreId == GenreId))
     .Select(m => new MaterialDTO
     {
         Id = m.Id,
