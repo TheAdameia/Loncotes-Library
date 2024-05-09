@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-namespace LocontesLibrary.Models;
+namespace LocontesLibrary.Models.DTOs;
 
-public class Patron
+public class PatronDTO
 {
     public int Id { get; set; }
     [Required]
