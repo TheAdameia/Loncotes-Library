@@ -28,20 +28,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/api/materials", (LoncotesLibraryDbContext db, int? GenreId, int? MaterialTypeId) =>
+app.MapGet("/api/materials", (LoncotesLibraryDbContext db, int? GenreInput, int? MaterialTypeInput) =>
 {
-    if (GenreId != null && MaterialTypeId != null)
-    {
-
-    }
-
     return db.Materials
     .Include(m => m.Genre)
     .Include(m => m.MaterialType)
-    // .Where(m => m.OutOfCirculationSince == null)
     .Where(m => m.OutOfCirculationSince == null &&
-                    (MaterialTypeId == null || m.MaterialTypeId == MaterialTypeId) &&
-                    (GenreId == null || m.GenreId == GenreId))
+                    (MaterialTypeInput == null || m.MaterialTypeId == MaterialTypeInput) &&
+                    (GenreInput == null || m.GenreId == GenreInput))
     .Select(m => new MaterialDTO
     {
         Id = m.Id,
@@ -60,6 +54,33 @@ app.MapGet("/api/materials", (LoncotesLibraryDbContext db, int? GenreId, int? Ma
             Name = m.Genre.Name
         }
     }).ToList();
+});
+
+app.MapGet("/api/materials/{id}", (LoncotesLibraryDbContext db, int id) =>
+{
+    return db.Materials
+    .Include(m => m.Genre)
+    .Include(m => m.MaterialType)
+    //.Include()  join checkouts somehow
+    .Select(m => new MaterialDTO
+    {
+        Id = m.Id,
+        MaterialName = m.MaterialName,
+        MaterialTypeId = m.MaterialTypeId,
+        MaterialType =  new MaterialTypeDTO
+        {
+            Id = m.MaterialType.Id,
+            Name = m.MaterialType.Name,
+            CheckoutDays = m.MaterialType.CheckoutDays
+        },
+        GenreId = m.GenreId,
+        Genre = new GenreDTO
+        {
+            Id = m.Genre.Id,
+            Name = m.Genre.Name
+        }
+    });
+
 });
 
 app.Run();
