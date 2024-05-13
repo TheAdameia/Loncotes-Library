@@ -1,4 +1,5 @@
-using LocontesLibrary.Models;
+using LoncotesLibrary.Models;
+using LoncotesLibrary.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Json;
@@ -14,7 +15,7 @@ builder.Services.AddSwaggerGen();
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 // allows our api endpoints to access the database through Entity Framework Core
-builder.Services.AddNpgsql<LocontesLibraryDbContext>(builder.Configuration["LocontesLibraryDbConnectionString"]);
+builder.Services.AddNpgsql<LoncotesLibraryDbContext>(builder.Configuration["LoncotesLibraryDbConnectionString"]);
 
 var app = builder.Build();
 
@@ -26,6 +27,80 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.MapGet("/api/materials", (LoncotesLibraryDbContext db, int? GenreInput, int? MaterialTypeInput) =>
+{
+    return db.Materials
+    .Include(m => m.Genre)
+    .Include(m => m.MaterialType)
+    .Where(m => m.OutOfCirculationSince == null &&
+                    (MaterialTypeInput == null || m.MaterialTypeId == MaterialTypeInput) &&
+                    (GenreInput == null || m.GenreId == GenreInput))
+    .Select(m => new MaterialDTO
+    {
+        Id = m.Id,
+        MaterialName = m.MaterialName,
+        MaterialTypeId = m.MaterialTypeId,
+        MaterialType = new MaterialTypeDTO
+        {
+            Id = m.MaterialType.Id,
+            Name = m.MaterialType.Name,
+            CheckoutDays = m.MaterialType.CheckoutDays
+        },
+        GenreId = m.GenreId,
+        Genre = new GenreDTO
+        {
+            Id = m.Genre.Id,
+            Name = m.Genre.Name
+        }
+    }).ToList();
+});
+
+app.MapGet("/api/materials/{id}", (LoncotesLibraryDbContext db, int id) =>
+{
+    // instead of "joining" checkouts, I could create a new list for them here and then first-search it for the right one.
+
+    List<CheckoutDTO> checkoutList = db.Checkouts.Select(c => new CheckoutDTO
+    {
+        Id = c.Id,
+        MaterialId = c.MaterialId,
+        PatronId = c.PatronId,
+        CheckoutDate = c.CheckoutDate
+    }).ToList();
+
+    List<CheckoutDTO> correctCheckouts = checkoutList.Where(c => c.MaterialId == id).ToList();
+
+    return db.Materials
+    .Include(m => m.Genre)
+    .Include(m => m.MaterialType)
+    .Select(m => new MaterialDTO
+    {
+        Id = m.Id,
+        MaterialName = m.MaterialName,
+        MaterialTypeId = m.MaterialTypeId,
+        MaterialType =  new MaterialTypeDTO
+        {
+            Id = m.MaterialType.Id,
+            Name = m.MaterialType.Name,
+            CheckoutDays = m.MaterialType.CheckoutDays
+        },
+        GenreId = m.GenreId,
+        Genre = new GenreDTO
+        {
+            Id = m.Genre.Id,
+            Name = m.Genre.Name
+        },
+        Checkouts = correctCheckouts.Select(c => new CheckoutDTO
+        {
+            Id = c.Id,
+            MaterialId = c.MaterialId,
+            PatronId = c.PatronId,
+            CheckoutDate = c.CheckoutDate
+        }).ToList()
+    });
+
+});
+
 
 
 

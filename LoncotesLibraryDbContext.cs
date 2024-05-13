@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using LocontesLibrary.Models;
+using LoncotesLibrary.Models;
 
-public class LocontesLibraryDbContext : DbContext
+public class LoncotesLibraryDbContext : DbContext
 {
 
     public DbSet<Checkout> Checkouts { get; set; }
@@ -10,7 +10,7 @@ public class LocontesLibraryDbContext : DbContext
     public DbSet<MaterialType> MaterialTypes { get; set; }
     public DbSet<Patron> Patrons { get; set; }
 
-    public LocontesLibraryDbContext(DbContextOptions<LocontesLibraryDbContext> context) : base(context)
+    public LoncotesLibraryDbContext(DbContextOptions<LoncotesLibraryDbContext> context) : base(context)
     {
 
     }

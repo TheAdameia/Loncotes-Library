@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-namespace LocontesLibrary.Models;
+namespace LoncotesLibrary.Models;
 
 public class Genre
 {
