@@ -58,10 +58,21 @@ app.MapGet("/api/materials", (LoncotesLibraryDbContext db, int? GenreInput, int?
 
 app.MapGet("/api/materials/{id}", (LoncotesLibraryDbContext db, int id) =>
 {
+    // instead of "joining" checkouts, I could create a new list for them here and then first-search it for the right one.
+
+    List<CheckoutDTO> checkoutList = db.Checkouts.Select(c => new CheckoutDTO
+    {
+        Id = c.Id,
+        MaterialId = c.MaterialId,
+        PatronId = c.PatronId,
+        CheckoutDate = c.CheckoutDate
+    }).ToList();
+
+    List<CheckoutDTO> correctCheckouts = checkoutList.Where(c => c.MaterialId == id).ToList();
+
     return db.Materials
     .Include(m => m.Genre)
     .Include(m => m.MaterialType)
-    //.Include()  join checkouts somehow
     .Select(m => new MaterialDTO
     {
         Id = m.Id,
@@ -78,10 +89,20 @@ app.MapGet("/api/materials/{id}", (LoncotesLibraryDbContext db, int id) =>
         {
             Id = m.Genre.Id,
             Name = m.Genre.Name
-        }
+        },
+        Checkouts = correctCheckouts.Select(c => new CheckoutDTO
+        {
+            Id = c.Id,
+            MaterialId = c.MaterialId,
+            PatronId = c.PatronId,
+            CheckoutDate = c.CheckoutDate
+        }).ToList()
     });
 
 });
+
+
+
 
 app.Run();
 
