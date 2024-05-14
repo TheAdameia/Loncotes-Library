@@ -186,21 +186,34 @@ app.MapPut("/api/patrons/{id}", (int id, LoncotesLibraryDbContext db, Patron pat
     {
         return Results.NotFound();
     }
-    updatePatron.Address = patron.Address;
-    updatePatron.Email = patron.Email;
+
+    if (patron.Address != null && patron.Email != null)
+    {
+        updatePatron.Address = patron.Address;
+        updatePatron.Email = patron.Email;
+    }
 
     db.SaveChanges();
     return Results.NoContent();
 });
 
-app.MapDelete("/api/patron/{id}", (int id, LoncotesLibraryDbContext db) =>
+app.MapDelete("/api/patrons/{id}", (int id, LoncotesLibraryDbContext db) =>
 {
     Patron patron = db.Patrons.SingleOrDefault(p => p.Id == id);
     if (patron == null)
     {
         return Results.NotFound();
     }
-    patron.IsActive = false;
+
+    if (patron.IsActive == true)
+    {
+        patron.IsActive = false;
+    }
+    else if (patron.IsActive == false)
+    {
+        patron.IsActive = true;
+    }
+    
     db.SaveChanges();
     return Results.NoContent();
 });
@@ -213,7 +226,20 @@ app.MapPost("/api/newCheckout", (LoncotesLibraryDbContext db, Checkout checkout)
     return Results.NoContent();
 });
 
-app.MapPut("/api/checkout/{id}", (int id, LoncotesLibraryDbContext db) =>
+app.MapGet("/api/checkouts", (LoncotesLibraryDbContext db) => 
+{
+    return db.Checkouts
+    .Select(co => new CheckoutDTO
+    {
+        Id = co.Id,
+        MaterialId = co.MaterialId,
+        PatronId = co.PatronId,
+        CheckoutDate = co.CheckoutDate,
+        ReturnDate = co.ReturnDate
+    });
+});
+
+app.MapPut("/api/checkouts/{id}", (int id, LoncotesLibraryDbContext db) =>
 {
     Checkout updateCheckout = db.Checkouts.FirstOrDefault(c => c.Id == id);
     if (updateCheckout == null)
